@@ -1,8 +1,8 @@
 # go-pdebug
 
-[![Build Status](https://travis-ci.org/lestrrat/go-jsval.svg?branch=master)](https://travis-ci.org/lestrrat/go-jsval)
+[![Build Status](https://travis-ci.org/lestrrat/go-pdebug.svg?branch=master)](https://travis-ci.org/lestrrat/go-pdebug)
 
-[![GoDoc](https://godoc.org/github.com/lestrrat/go-jsval?status.svg)](https://godoc.org/github.com/lestrrat/go-jsval)
+[![GoDoc](https://godoc.org/github.com/lestrrat/go-pdebug?status.svg)](https://godoc.org/github.com/lestrrat/go-pdebug)
 
 Utilities for my print debugging fun. YMMV
 
