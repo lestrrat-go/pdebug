@@ -1,4 +1,4 @@
-//+build !debug
+//+build !debug,!debug0
 
 package pdebug
 
