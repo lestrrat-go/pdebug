@@ -86,8 +86,11 @@ func (g *markerg) BindError(errptr *error) *markerg {
 }
 
 func (g *markerg) End() {
-	g.indentg.End() // unindent
+	if g.ctx == nil {
+		return
+	}
 
+	g.indentg.End() // unindent
 	buf := &bytes.Buffer{}
 	fmt.Fprint(buf, g.ctx.Preamble())
 	fmt.Fprint(buf, "END ")
@@ -139,6 +142,9 @@ func IPrintf(f string, args ...interface{}) legacyg {
 
 // Printf prints debug messages. Only available if compiled with "debug" tag
 func Printf(f string, args ...interface{}) {
+	if !Trace {
+		return
+	}
 	DefaultCtx.Printf(f, args...)
 }
 

@@ -5,6 +5,7 @@ package pdebug
 // Enabled is true if `-tags debug` is used during compilation.
 // Use this to basically "ifdef-out" debug blocks.
 const Enabled = false
+const Trace = false
 
 // IRelease undoes the indentation formatting. See IPrintf.
 // IRelease is a no op unless you compile with the `debug` tag.
