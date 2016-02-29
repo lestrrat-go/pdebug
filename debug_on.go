@@ -35,7 +35,7 @@ func (ctx *pdctx) Preamble() string {
 	}
 
 	for i := 0; i < ctx.indentL; i++ {
-		buf.WriteRune('\t')
+		buf.WriteString("  ")
 	}
 	return buf.String()
 }

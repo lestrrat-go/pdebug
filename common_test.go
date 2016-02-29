@@ -55,7 +55,7 @@ func TestMarker(t *testing.T) {
 	f1()
 
 	if Enabled && Trace {
-		const expected = "|DEBUG| START f1\n|DEBUG| \tSTART f2\n|DEBUG| \t\tHello, World!\n|DEBUG| \tEND f2 ("
+		const expected = "|DEBUG| START f1\n|DEBUG|   START f2\n|DEBUG|     Hello, World!\n|DEBUG|   END f2 ("
 		if !assert.True(t, strings.HasPrefix(buf.String(), expected), "Markers should work") {
 			t.Logf("Expected '%v'", expected)
 			t.Logf("Actual   '%v'", buf.String())
@@ -95,7 +95,7 @@ func TestLegacyMarker(t *testing.T) {
 	f1()
 
 	if Enabled && Trace {
-		const expected = "|DEBUG| START f1\n|DEBUG| \tSTART f2\n|DEBUG| \t\tHello, World!\n|DEBUG| \tEND f2"
+		const expected = "|DEBUG| START f1\n|DEBUG|   START f2\n|DEBUG|     Hello, World!\n|DEBUG|   END f2"
 		if !assert.True(t, strings.HasPrefix(buf.String(), expected), "Markers should work") {
 			t.Logf("Expected '%v'", expected)
 			t.Logf("Actual   '%v'", buf.String())
