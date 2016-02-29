@@ -17,7 +17,7 @@ func setw(ctx *pdctx, w io.Writer) func() {
 	return func() { ctx.Writer = oldw }
 }
 
-func TestDebug0Basic(t *testing.T) {
+func TestNoDebugBasic(t *testing.T) {
 	buf := &bytes.Buffer{}
 	wg := setw(DefaultCtx, buf)
 	defer wg()
@@ -29,7 +29,7 @@ func TestDebug0Basic(t *testing.T) {
 	}
 }
 
-func TestDebug0Indent(t *testing.T) {
+func TestNoDebugIndent(t *testing.T) {
 	buf := &bytes.Buffer{}
 	wg := setw(DefaultCtx, buf)
 	defer wg()
