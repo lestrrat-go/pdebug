@@ -5,9 +5,6 @@ package pdebug
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -20,31 +17,7 @@ type Guard interface {
 	End()
 }
 
-type guard struct {
-	cb func()
-}
-
-func (g *guard) End() {
-	if cb := g.cb; cb != nil {
-		cb()
-	}
-}
-
-var prefixToken = "  "
-var logger = log.New(os.Stdout, "|DEBUG| ", 0)
-
 var emptyGuard = &guard{}
-
-type pdctx struct {
-	indentL int
-	Prefix  string
-	Writer  io.Writer
-}
-
-var DefaultCtx = &pdctx{
-	Prefix: "|DEBUG| ",
-	Writer: os.Stdout,
-}
 
 func (ctx *pdctx) Unindent() {
 	ctx.indentL--
@@ -74,17 +47,6 @@ func (ctx *pdctx) Printf(f string, args ...interface{}) {
 	fmt.Fprint(ctx.Writer, ctx.Preamble())
 	fmt.Fprintf(ctx.Writer, f, args...)
 }
-
-type markerg struct {
-	indentg guard
-	ctx     *pdctx
-	f       string
-	args    []interface{}
-	start   time.Time
-	errptr  *error
-}
-
-var emptyMarkerGuard = &markerg{}
 
 func Marker(f string, args ...interface{}) *markerg {
 	return DefaultCtx.Marker(f, args...)
@@ -118,7 +80,7 @@ func (ctx *pdctx) Marker(f string, args ...interface{}) *markerg {
 	}
 }
 
-func (g *markerg) BindError(errptr *error) *markerg{
+func (g *markerg) BindError(errptr *error) *markerg {
 	g.errptr = errptr
 	return g
 }

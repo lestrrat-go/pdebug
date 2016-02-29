@@ -6,8 +6,6 @@ package pdebug
 // Use this to basically "ifdef-out" debug blocks.
 const Enabled = false
 
-type guard struct{}
-
 // IRelease undoes the indentation formatting. See IPrintf.
 // IRelease is a no op unless you compile with the `debug` tag.
 func (g guard) IRelease(f string, args ...interface{}) {}
@@ -24,3 +22,7 @@ func Printf(f string, args ...interface{}) {}
 // Dump dumps the objects using go-spew.
 // Dump is a no op unless you compile with the `debug` tag.
 func Dump(v ...interface{}) {}
+
+func Marker(f string, args ...interface{}) *markerg { return emptyMarkerGuard }
+func (g *markerg) BindError(_ *error) *markerg { return g }
+func (g *markerg) End() {}
