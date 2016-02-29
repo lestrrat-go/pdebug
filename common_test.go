@@ -67,3 +67,46 @@ func TestMarker(t *testing.T) {
 		}
 	}
 }
+
+func TestLegacyMarker(t *testing.T) {
+	buf := &bytes.Buffer{}
+	wg := setw(DefaultCtx, buf)
+	defer wg()
+
+	f2 := func() (err error) {
+		g := IPrintf("START f2")
+		defer func() {
+			if err == nil {
+				g.IRelease("END f2")
+		  } else {
+			  g.IRelease("END f2: %s", err)
+			}
+		}()
+		Printf("Hello, World!")
+		return errors.New("dummy error")
+	}
+
+	f1 := func() {
+		g := IPrintf("START f1")
+		defer g.IRelease("END f1")
+		f2()
+	}
+
+	f1()
+
+	if Enabled && Trace {
+		const expected = "|DEBUG| START f1\n|DEBUG| \tSTART f2\n|DEBUG| \t\tHello, World!\n|DEBUG| \tEND f2"
+		if !assert.True(t, strings.HasPrefix(buf.String(), expected), "Markers should work") {
+			t.Logf("Expected '%v'", expected)
+			t.Logf("Actual   '%v'", buf.String())
+			return
+		}
+
+		// TODO: check for error and timestamp
+	} else {
+		if !assert.Equal(t, "", buf.String(), "Markers should work") {
+			return
+		}
+	}
+}
+
