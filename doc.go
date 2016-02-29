@@ -4,7 +4,7 @@
 //
 // When you compile your program with `-tags debug`, no trace is displayed,
 // but the code enclosed within `if pdebug.Enabled { ... }` is compiled in.
-// To show the debug trace, set the PDEBUG_ENABLE environment variable to
+// To show the debug trace, set the PDEBUG_TRACE environment variable to
 // true (or 1, or whatever `strconv.ParseBool` parses to true)
 //
 // If you want to show the debug trace regardless of an environment variable,
