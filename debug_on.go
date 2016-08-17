@@ -27,18 +27,18 @@ func (ctx *pdctx) Unindent() {
 
 func (ctx *pdctx) Indent() guard {
 	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-
 	ctx.indentL++
+	ctx.mutex.Unlock()
+
 	return guard{cb: ctx.Unindent}
 }
 
-func (ctx *pdctx) preamble(buf *bytes.Buffer) string {
+func (ctx *pdctx) preamble(buf *bytes.Buffer) {
 	if p := ctx.Prefix; len(p) > 0 {
 		buf.WriteString(p)
 	}
 	if ctx.LogTime {
-		buf.WriteString(time.Now().Format(time.RFC3339))
+		fmt.Fprintf(buf, "%0.5f ", float64(time.Now().UnixNano()) / 1000000.0)
 	}
 
 	for i := 0; i < ctx.indentL; i++ {
@@ -47,9 +47,6 @@ func (ctx *pdctx) preamble(buf *bytes.Buffer) string {
 }
 
 func (ctx *pdctx) Printf(f string, args ...interface{}) {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-
 	if !strings.HasSuffix(f, "\n") {
 		f = f + "\n"
 	}
@@ -64,9 +61,6 @@ func Marker(f string, args ...interface{}) *markerg {
 }
 
 func (ctx *pdctx) Marker(f string, args ...interface{}) *markerg {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-
 	if !Trace {
 		return emptyMarkerGuard
 	}
@@ -95,24 +89,24 @@ func (ctx *pdctx) Marker(f string, args ...interface{}) *markerg {
 }
 
 func (g *markerg) BindError(errptr *error) *markerg {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
+	if g.ctx == nil {
+		return g
+	}
+	g.ctx.mutex.Lock()
+	defer g.ctx.mutex.Unlock()
 
 	g.errptr = errptr
 	return g
 }
 
 func (g *markerg) End() {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-
 	if g.ctx == nil {
 		return
 	}
 
 	g.indentg.End() // unindent
 	buf := &bytes.Buffer{}
-	fmt.Fprint(buf, g.ctx.preamble())
+	g.ctx.preamble(buf)
 	fmt.Fprint(buf, "END ")
 	fmt.Fprintf(buf, g.f, g.args...)
 	fmt.Fprintf(buf, " (%s)", time.Since(g.start))
