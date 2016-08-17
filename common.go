@@ -3,11 +3,14 @@ package pdebug
 import (
 	"io"
 	"os"
+	"sync"
 	"time"
 )
 
 type pdctx struct {
+	mutex   sync.Mutex
 	indentL int
+	LogTime bool
 	Prefix  string
 	Writer  io.Writer
 }
@@ -24,8 +27,9 @@ type markerg struct {
 }
 
 var DefaultCtx = &pdctx{
-	Prefix: "|DEBUG| ",
-	Writer: os.Stdout,
+	LogTime: true,
+	Prefix:  "|DEBUG| ",
+	Writer:  os.Stdout,
 }
 
 type guard struct {
