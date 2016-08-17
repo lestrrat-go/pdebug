@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"strings"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,7 +24,8 @@ func TestPrintf(t *testing.T) {
 	Printf("Hello, World!")
 
 	if Enabled && Trace {
-		if !assert.Equal(t, "|DEBUG| Hello, World!\n", buf.String(), "Simple Printf works") {
+		re := regexp.MustCompile(`\|DEBUG\| \d+\.\d+ Hello, World!\n`)
+		if !assert.True(t, re.MatchString(buf.String()), "Simple Printf works") {
 			return
 		}
 	} else {
@@ -55,9 +56,9 @@ func TestMarker(t *testing.T) {
 	f1()
 
 	if Enabled && Trace {
-		const expected = "|DEBUG| START f1\n|DEBUG|   START f2\n|DEBUG|     Hello, World!\n|DEBUG|   END f2 ("
-		if !assert.True(t, strings.HasPrefix(buf.String(), expected), "Markers should work") {
-			t.Logf("Expected '%v'", expected)
+		re := regexp.MustCompile(`\|DEBUG\| \d+\.\d+ START f1\n\|DEBUG\| \d+\.\d+   START f2\n\|DEBUG\| \d+\.\d+     Hello, World!\n\|DEBUG\| \d+\.\d+   END f2 \(`)
+		if !assert.True(t, re.MatchString(buf.String()), "Markers should work") {
+			t.Logf("Expected '%v'", re)
 			t.Logf("Actual   '%v'", buf.String())
 			return
 		}
@@ -78,8 +79,8 @@ func TestLegacyMarker(t *testing.T) {
 		defer func() {
 			if err == nil {
 				g.IRelease("END f2")
-		  } else {
-			  g.IRelease("END f2: %s", err)
+			} else {
+				g.IRelease("END f2: %s", err)
 			}
 		}()
 		Printf("Hello, World!")
@@ -95,9 +96,9 @@ func TestLegacyMarker(t *testing.T) {
 	f1()
 
 	if Enabled && Trace {
-		const expected = "|DEBUG| START f1\n|DEBUG|   START f2\n|DEBUG|     Hello, World!\n|DEBUG|   END f2"
-		if !assert.True(t, strings.HasPrefix(buf.String(), expected), "Markers should work") {
-			t.Logf("Expected '%v'", expected)
+		re := regexp.MustCompile(`\|DEBUG\| \d+\.\d+ START f1\n\|DEBUG\| \d+\.\d+   START f2\n\|DEBUG\| \d+\.\d+     Hello, World!\n\|DEBUG\| \d+\.\d+   END f2`)
+		if !assert.True(t, re.MatchString(buf.String()), "Markers should work") {
+			t.Logf("Expected '%v'", re)
 			t.Logf("Actual   '%v'", buf.String())
 			return
 		}
@@ -109,4 +110,3 @@ func TestLegacyMarker(t *testing.T) {
 		}
 	}
 }
-
