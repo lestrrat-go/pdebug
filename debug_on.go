@@ -33,7 +33,7 @@ func (ctx *pdctx) Indent() guard {
 	return guard{cb: ctx.Unindent}
 }
 
-func (ctx *pdctx) preamble(buf &bytes.Buffer) string {
+func (ctx *pdctx) preamble(buf *bytes.Buffer) string {
 	if p := ctx.Prefix; len(p) > 0 {
 		buf.WriteString(p)
 	}
