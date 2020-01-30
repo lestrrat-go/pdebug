@@ -39,6 +39,9 @@ When `debug` tag is specified, the messages will only appear when
 
 # Printing
 
+Single messages can be printed by simpley invoking `pdebug.Printf`.
+When you disable pdebug, these function calls are effectively compiled out.
+
 ```go
 import (
 	"context"
@@ -63,7 +66,7 @@ code segments
 
 ```go
 func main() {
-	foo(context.Backgrounf())
+	foo(context.Background())
 }
 
 func foo(ctx context.Context) {
@@ -106,6 +109,8 @@ func foo(ctx context.Context) {
 	...
 }
 ```
+
+These sections will be constant folded when `pdebug` is disabled.
 
 # Options
 
