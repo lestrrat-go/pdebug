@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -114,6 +115,27 @@ func formatMarkerMessage(buf *[]byte, format string, args []interface{}, prefix,
 	}
 }
 
+var markerGuardPool = sync.Pool{
+	New: allocMarkerGuard,
+}
+
+func allocMarkerGuard() interface{} {
+	return &MarkerGuard{}
+}
+
+func getMarkerGuard() *MarkerGuard {
+	return markerGuardPool.Get().(*MarkerGuard)
+}
+
+func releaseMarkerGuard(mg *MarkerGuard) {
+	mg.ctx = nil
+	mg.indent = 0
+	mg.msgFormat = ""
+	mg.msgArgs = nil
+	mg.prefix = nil
+	markerGuardPool.Put(mg)
+}
+
 // Marker creates a marker. A marker is basically something that is used
 // to remember and mark the entry point and the exit point of a particular
 // section of code.
@@ -123,13 +145,12 @@ func Marker(ctx context.Context, format string, args ...interface{}) *MarkerGuar
 	}
 
 	xctx, mctx := getMarkerCtx(ctx)
-	mg := &MarkerGuard{
-		ctx:       xctx,
-		indent:    mctx.indent,
-		msgFormat: format,
-		msgArgs:   args,
-		prefix:    mctx.prefix,
-	}
+	mg := getMarkerGuard()
+	mg.ctx = xctx
+	mg.indent = mctx.indent
+	mg.msgFormat = format
+	mg.msgArgs = args
+	mg.prefix = mctx.prefix
 
 	if clock := mctx.clock; clock != nil {
 		mg.start = clock.Now()
@@ -170,6 +191,8 @@ func appendPreamble(buf *[]byte, prefix []byte, clock Clock, indent int) {
 	}
 }
 
+// End finalizes the MarkerGuard. Subsequent calls to the same object are
+// invalid, and may cause panics.
 func (mg *MarkerGuard) End() {
 	if !Trace {
 		return
@@ -208,6 +231,8 @@ func (mg *MarkerGuard) End() {
 	formatMarkerMessage(&buf, "END   "+mg.msgFormat, mg.msgArgs, mg.prefix, postfix, clock, mctx.indent)
 
 	mctx.out.Write(buf)
+
+	releaseMarkerGuard(mg)
 }
 
 func Printf(ctx context.Context, format string, args ...interface{}) {

@@ -35,6 +35,8 @@ func TestMarker(t *testing.T) {
 		err = errors.New("test 1 error")
 	}(ctx)
 
+	t.Logf("%s", buf.String())
+
 	if pdebug.Enabled && pdebug.Trace {
 		const expected = `|DEBUG| 0.00000 START Test 1
 |DEBUG| 0.00000   Hello, World test 1

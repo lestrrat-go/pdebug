@@ -1,4 +1,4 @@
-# go-pdebug
+# pdebug
 
 [![Build Status](https://travis-ci.org/lestrrat-go/pdebug.svg?branch=master)](https://travis-ci.org/lestrrat-go/pdebug)
 
@@ -12,7 +12,7 @@ Utilities for my print debugging fun. YMMV
 
 # Description
 
-`pdebug` is a collection of tools to make print debugging easier.
+`pdebug` is a collection of tools to make **p**rint **debug**ging easier.
 
 You can control the output of the debug prints via build tags:
 
@@ -62,20 +62,30 @@ func main() {
 There are occasions when you would like to see the context in which
 the particular print statement was invoked from. For this purpose
 we have a "Marker" to mark entry points and exit points of particular
-code segments
+code segments:
 
 ```go
 func main() {
-	foo(context.Background())
+	Foo(context.Background())
 }
 
-func foo(ctx context.Context) {
-	g := pdebug.Marker(ctx, "foo") // ... START foo
-	defer g.End()                  // ... END   foo (elapsed=...)
+func Foo(ctx context.Context) {
+	g := pdebug.Marker(ctx, "Foo") // ... START Foo
+	defer g.End()                  // ... END   Foo (elapsed=...)
 
 	pdebug.Printf("hello, world!") // This statement is printed in between START/END, indented
 	...
 }
+
+
+```
+
+The above will result in an output like below
+
+```
+|DEBUG| START Foo
+|DEBUG|   hello, world!
+|DEBUG| END Foo (elapsed=1.23μs)
 ```
 
 The marker can also print out error values in a defer hook by binding
@@ -83,8 +93,8 @@ the pointer to an error. This is one of the rare cases where a named
 return value is handy:
 
 ```go
-func foo(ctx context.Context) (err error) {
-	g := pdebug.Marker(ctx, "foo").Bind(&err)
+func Foo(ctx context.Context) (err error) {
+	g := pdebug.Marker(ctx, "Foo").Bind(&err)
 	defer g.End()
 
 	// much later ...
@@ -94,6 +104,12 @@ func foo(ctx context.Context) (err error) {
 
 This will include the textual representation of the error in the print
 statement of the exit point.
+
+```
+|DEBUG| START Foo
+...
+|DEBUG| END Foo (elapsed=1.23μs, error=something awful happened!)
+```
 
 # Switch
 
@@ -126,9 +142,9 @@ this unless you are testing or doing something extremely evil
 
 Specifies where the logs are to be stored.
 
-## WithPrefix(context.Contet, string)
+## WithPrefix(context.Context, string)
 
-Specifies the string that is prefixed in each line of the messages. Default is `|DEBUG| `
+Specifies a static string that is prefixed in each line of the messages. Default is `|DEBUG| `
 
 ## WithTimestamp(context.Context, bool)
 
