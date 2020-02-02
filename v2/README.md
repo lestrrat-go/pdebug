@@ -94,7 +94,7 @@ return value is handy:
 
 ```go
 func Foo(ctx context.Context) (err error) {
-	g := pdebug.Marker(ctx, "Foo").Bind(&err)
+	g := pdebug.Marker(ctx, "Foo").BindError(&err)
 	defer g.End()
 
 	// much later ...

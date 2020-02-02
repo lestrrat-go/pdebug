@@ -23,7 +23,7 @@ func TestMarker(t *testing.T) {
 
 	func(ctx context.Context) {
 		var err error
-		g1 := pdebug.Marker(ctx, "Test 1").Bind(&err)
+		g1 := pdebug.Marker(ctx, "Test 1").BindError(&err)
 		defer g1.End()
 
 		pdebug.Printf(ctx, "Hello, World test 1")

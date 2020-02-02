@@ -169,7 +169,7 @@ func Marker(ctx context.Context, format string, args ...interface{}) *MarkerGuar
 	return mg
 }
 
-func (mg *MarkerGuard) Bind(err *error) *MarkerGuard {
+func (mg *MarkerGuard) BindError(err *error) *MarkerGuard {
 	if !Trace {
 		return nil
 	}

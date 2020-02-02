@@ -32,7 +32,7 @@ func Marker(_ context.Context, _ string, _ ...interface{}) *MarkerGuard {
 	return nil
 }
 
-func (mg *MarkerGuard) Bind(_ *error) *MarkerGuard {
+func (mg *MarkerGuard) BindError(_ *error) *MarkerGuard {
 	return nil
 }
 
