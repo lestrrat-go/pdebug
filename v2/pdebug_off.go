@@ -20,7 +20,7 @@ func WithClock(ctx context.Context, _ Clock) context.Context {
 	return ctx
 }
 
-func WithID((ctx context.Context, _ string) context.Context {
+func WithID(ctx context.Context, _ string) context.Context {
 	return ctx
 }
 
