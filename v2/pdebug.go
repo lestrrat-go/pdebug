@@ -49,6 +49,19 @@ func getMarkerCtx(ctx context.Context) (context.Context, *markerCtx) {
 	return ctx, mctx
 }
 
+func Context(ctx context.Context) context.Context {
+	if !Trace {
+		return ctx
+	}
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	xctx, _ := getMarkerCtx(ctx)
+	return xctx
+}
+
 func WithTimestamp(ctx context.Context, b bool) context.Context {
 	if !Trace {
 		return ctx

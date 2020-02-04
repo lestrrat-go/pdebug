@@ -50,7 +50,7 @@ import (
 )
 
 func main() {
-	ctx := context.Backgrpound()
+	ctx := pdebug.Context(nil)
 	pdebug.Printf(ctx, "Hello, World!")
 
 	...
@@ -66,7 +66,7 @@ code segments:
 
 ```go
 func main() {
-	Foo(context.Background())
+	Foo(pdebug.Context(nil))
 }
 
 func Foo(ctx context.Context) {
