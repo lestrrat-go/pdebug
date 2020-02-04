@@ -45,7 +45,7 @@ func TestMarker(t *testing.T) {
 |DEBUG| 0.00000   END   Test 2(elapsed=0s)
 |DEBUG| 0.00000 END   Test 1(elapsed=0s, error=test 1 error)
 `
-		if !assert.Equal(t, buf.String(), expected) {
+		if !assert.Equal(t, expected, buf.String()) {
 			return
 		}
 	}
