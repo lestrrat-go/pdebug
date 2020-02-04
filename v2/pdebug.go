@@ -19,6 +19,7 @@ const Enabled = true
 type markerKey struct{}
 type markerCtx struct {
 	clock      interface{ Now() time.Time }
+	id         []byte
 	indent     int
 	out        io.Writer
 	prefix     []byte
@@ -28,12 +29,14 @@ type markerCtx struct {
 var defaultClock = ClockFunc(time.Now)
 
 func defaultMarkerCtx() *markerCtx {
-	return &markerCtx{
+	ctx := &markerCtx{
 		clock:      defaultClock,
 		out:        os.Stderr,
 		prefix:     []byte("|DEBUG| "),
 		timestamps: true,
 	}
+	ctx.id = []byte(fmt.Sprintf("%p", ctx))
+	return ctx
 }
 
 func getMarkerCtx(ctx context.Context) (context.Context, *markerCtx) {
@@ -47,6 +50,19 @@ func getMarkerCtx(ctx context.Context) (context.Context, *markerCtx) {
 	}
 
 	return ctx, mctx
+}
+
+func Context(ctx context.Context) context.Context {
+	if !Trace {
+		return ctx
+	}
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	xctx, _ := getMarkerCtx(ctx)
+	return xctx
 }
 
 func WithTimestamp(ctx context.Context, b bool) context.Context {
@@ -89,6 +105,16 @@ func WithPrefix(ctx context.Context, prefix string) context.Context {
 	return xctx
 }
 
+func WithID(ctx context.Context, id string) context.Context {
+	if !Trace {
+		return ctx
+	}
+
+	xctx, mctx := getMarkerCtx(ctx)
+	mctx.id = []byte(id)
+	return xctx
+}
+
 type MarkerGuard struct {
 	ctx       context.Context
 	errptr    *error
@@ -96,18 +122,17 @@ type MarkerGuard struct {
 	msgFormat string
 	msgArgs   []interface{}
 	out       io.Writer
-	prefix    []byte
 	start     time.Time
 }
 
-func formatMarkerMessage(buf *[]byte, format string, args []interface{}, prefix, postfix []byte, clock Clock, indent int) {
+func formatMarkerMessage(buf *[]byte, format string, args []interface{}, id, prefix, postfix []byte, clock Clock, indent int) {
 	// foo\nbar\n should be written as preamble foo\npreamble bar\n
 	var scratch bytes.Buffer
 	fmt.Fprintf(&scratch, format, args...)
 
 	scanner := bufio.NewScanner(&scratch)
 	for scanner.Scan() {
-		appendPreamble(buf, prefix, clock, indent)
+		appendPreamble(buf, id, prefix, clock, indent)
 		line := scanner.Bytes()
 		*buf = append(*buf, line...)
 		*buf = append(*buf, postfix...)
@@ -132,7 +157,6 @@ func releaseMarkerGuard(mg *MarkerGuard) {
 	mg.indent = 0
 	mg.msgFormat = ""
 	mg.msgArgs = nil
-	mg.prefix = nil
 	markerGuardPool.Put(mg)
 }
 
@@ -150,7 +174,6 @@ func Marker(ctx context.Context, format string, args ...interface{}) *MarkerGuar
 	mg.indent = mctx.indent
 	mg.msgFormat = format
 	mg.msgArgs = args
-	mg.prefix = mctx.prefix
 
 	if clock := mctx.clock; clock != nil {
 		mg.start = clock.Now()
@@ -164,12 +187,12 @@ func Marker(ctx context.Context, format string, args ...interface{}) *MarkerGuar
 		clock = mctx.clock
 	}
 
-	formatMarkerMessage(&buf, "START "+mg.msgFormat, mg.msgArgs, mg.prefix, nil, clock, mg.indent)
+	formatMarkerMessage(&buf, "START "+mg.msgFormat, mg.msgArgs, mctx.id, mctx.prefix, nil, clock, mg.indent)
 	mctx.out.Write(buf)
 	return mg
 }
 
-func (mg *MarkerGuard) Bind(err *error) *MarkerGuard {
+func (mg *MarkerGuard) BindError(err *error) *MarkerGuard {
 	if !Trace {
 		return nil
 	}
@@ -178,8 +201,12 @@ func (mg *MarkerGuard) Bind(err *error) *MarkerGuard {
 	return mg
 }
 
-func appendPreamble(buf *[]byte, prefix []byte, clock Clock, indent int) {
+func appendPreamble(buf *[]byte, id, prefix []byte, clock Clock, indent int) {
 	*buf = append(*buf, prefix...)
+
+	*buf = append(*buf, id...)
+	*buf = append(*buf, ' ')
+
 	if clock != nil {
 		*buf = append(*buf,
 			[]byte(strconv.FormatFloat(float64(clock.Now().UnixNano())/1000000.0, 'f', 5, 64))...,
@@ -228,7 +255,7 @@ func (mg *MarkerGuard) End() {
 	}
 
 	var buf []byte
-	formatMarkerMessage(&buf, "END   "+mg.msgFormat, mg.msgArgs, mg.prefix, postfix, clock, mctx.indent)
+	formatMarkerMessage(&buf, "END   "+mg.msgFormat, mg.msgArgs, mctx.id, mctx.prefix, postfix, clock, mctx.indent)
 
 	mctx.out.Write(buf)
 
@@ -247,6 +274,6 @@ func Printf(ctx context.Context, format string, args ...interface{}) {
 	if mctx.timestamps {
 		clock = mctx.clock
 	}
-	formatMarkerMessage(&buf, format, args, mctx.prefix, nil, clock, mctx.indent)
+	formatMarkerMessage(&buf, format, args, mctx.id, mctx.prefix, nil, clock, mctx.indent)
 	mctx.out.Write(buf)
 }

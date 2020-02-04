@@ -50,7 +50,7 @@ import (
 )
 
 func main() {
-	ctx := context.Backgrpound()
+	ctx := pdebug.Context(nil)
 	pdebug.Printf(ctx, "Hello, World!")
 
 	...
@@ -66,7 +66,7 @@ code segments:
 
 ```go
 func main() {
-	Foo(context.Background())
+	Foo(pdebug.Context(nil))
 }
 
 func Foo(ctx context.Context) {
@@ -94,7 +94,7 @@ return value is handy:
 
 ```go
 func Foo(ctx context.Context) (err error) {
-	g := pdebug.Marker(ctx, "Foo").Bind(&err)
+	g := pdebug.Marker(ctx, "Foo").BindError(&err)
 	defer g.End()
 
 	// much later ...
