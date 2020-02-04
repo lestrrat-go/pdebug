@@ -105,6 +105,16 @@ func WithPrefix(ctx context.Context, prefix string) context.Context {
 	return xctx
 }
 
+func WithID(ctx context.Context, id string) context.Context {
+	if !Trace {
+		return ctx
+	}
+
+	xctx, mctx := getMarkerCtx(ctx)
+	mctx.id = []byte(id)
+	return xctx
+}
+
 type MarkerGuard struct {
 	ctx       context.Context
 	errptr    *error

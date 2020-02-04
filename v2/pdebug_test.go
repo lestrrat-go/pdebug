@@ -18,6 +18,7 @@ func TestMarker(t *testing.T) {
 	var buf bytes.Buffer
 
 	var now = time.Unix(0, 0)
+	ctx = pdebug.WithID(ctx, "123456789")
 	ctx = pdebug.WithClock(ctx, pdebug.ClockFunc(func() time.Time { return now }))
 	ctx = pdebug.WithOutput(ctx, &buf)
 
@@ -38,12 +39,12 @@ func TestMarker(t *testing.T) {
 	t.Logf("%s", buf.String())
 
 	if pdebug.Enabled && pdebug.Trace {
-		const expected = `|DEBUG| 0.00000 START Test 1
-|DEBUG| 0.00000   Hello, World test 1
-|DEBUG| 0.00000   START Test 2
-|DEBUG| 0.00000     Hello, World test 2
-|DEBUG| 0.00000   END   Test 2(elapsed=0s)
-|DEBUG| 0.00000 END   Test 1(elapsed=0s, error=test 1 error)
+		const expected = `|DEBUG| 123456789 0.00000 START Test 1
+|DEBUG| 123456789 0.00000   Hello, World test 1
+|DEBUG| 123456789 0.00000   START Test 2
+|DEBUG| 123456789 0.00000     Hello, World test 2
+|DEBUG| 123456789 0.00000   END   Test 2(elapsed=0s)
+|DEBUG| 123456789 0.00000 END   Test 1(elapsed=0s, error=test 1 error)
 `
 		if !assert.Equal(t, expected, buf.String()) {
 			return
