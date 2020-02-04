@@ -20,6 +20,10 @@ func WithClock(ctx context.Context, _ Clock) context.Context {
 	return ctx
 }
 
+func WithID((ctx context.Context, _ string) context.Context {
+	return ctx
+}
+
 func WithOutput(ctx context.Context, _ io.Writer) context.Context {
 	return ctx
 }
