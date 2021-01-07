@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -158,6 +159,15 @@ func releaseMarkerGuard(mg *MarkerGuard) {
 	mg.msgFormat = ""
 	mg.msgArgs = nil
 	markerGuardPool.Put(mg)
+}
+
+func FuncMarker(ctx context.Context) *MarkerGuard {
+	pc, _, _, ok := runtime.Caller(1)
+	if !ok {
+		panic("pdebug.FuncMarker could not determine the name of caller function")
+	}
+	f := runtime.FuncForPC(pc)
+	return Marker(ctx, f.Name())
 }
 
 // Marker creates a marker. A marker is basically something that is used
