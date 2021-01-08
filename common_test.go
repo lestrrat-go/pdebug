@@ -1,3 +1,5 @@
+// +build debug OR debug0
+
 package pdebug
 
 import (

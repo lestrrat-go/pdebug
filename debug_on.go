@@ -5,11 +5,49 @@ package pdebug
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
 )
+
+type pdctx struct {
+	mutex   sync.Mutex
+	indentL int
+	LogTime bool
+	Prefix  string
+	Writer  io.Writer
+}
+
+var DefaultCtx = &pdctx{
+	LogTime: true,
+	Prefix:  "|DEBUG| ",
+	Writer:  os.Stdout,
+}
+
+type guard struct {
+	cb func()
+}
+
+func (g *guard) End() {
+	if cb := g.cb; cb != nil {
+		cb()
+	}
+}
+
+type markerg struct {
+	indentg guard
+	ctx     *pdctx
+	f       string
+	args    []interface{}
+	start   time.Time
+	errptr  *error
+}
+
+var emptyMarkerGuard = &markerg{}
 
 const Enabled = true
 
@@ -36,7 +74,7 @@ func (ctx *pdctx) preamble(buf *bytes.Buffer) {
 		buf.WriteString(p)
 	}
 	if ctx.LogTime {
-		fmt.Fprintf(buf, "%0.5f ", float64(time.Now().UnixNano()) / 1000000.0)
+		fmt.Fprintf(buf, "%0.5f ", float64(time.Now().UnixNano())/1000000.0)
 	}
 
 	for i := 0; i < ctx.indentL; i++ {
