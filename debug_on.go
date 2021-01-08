@@ -17,8 +17,6 @@ type Guard interface {
 	End()
 }
 
-var emptyGuard = &guard{}
-
 func (ctx *pdctx) Unindent() {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
@@ -53,7 +51,7 @@ func (ctx *pdctx) Printf(f string, args ...interface{}) {
 	buf := bytes.Buffer{}
 	ctx.preamble(&buf)
 	fmt.Fprintf(&buf, f, args...)
-	buf.WriteTo(ctx.Writer)
+	_, _ = buf.WriteTo(ctx.Writer)
 }
 
 func Marker(f string, args ...interface{}) *markerg {
@@ -75,7 +73,7 @@ func (ctx *pdctx) Marker(f string, args ...interface{}) *markerg {
 		}
 	}
 
-	buf.WriteTo(ctx.Writer)
+	_, _ = buf.WriteTo(ctx.Writer)
 
 	g := ctx.Indent()
 	return &markerg{
@@ -120,7 +118,7 @@ func (g *markerg) End() {
 		}
 	}
 
-	buf.WriteTo(g.ctx.Writer)
+	_, _ = buf.WriteTo(g.ctx.Writer)
 }
 
 type legacyg struct {
