@@ -50,3 +50,5 @@ func (mg *MarkerGuard) BindError(_ *error) *MarkerGuard {
 func (mg *MarkerGuard) End() {}
 
 func Printf(_ context.Context, _ string, _ ...interface{}) {}
+
+func FuncMarker(_ context.Context) *MarkerGuard { return nil }

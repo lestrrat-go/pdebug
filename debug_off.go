@@ -2,6 +2,10 @@
 
 package pdebug
 
+type guard struct{}
+
+func (g guard) End() {}
+
 // Enabled is true if `-tags debug` or `-tags debug0` is used
 // during compilation. Use this to "ifdef-out" debug blocks.
 const Enabled = false
@@ -9,7 +13,7 @@ const Enabled = false
 // Trace is true if `-tags debug` is used AND the environment
 // variable `PDEBUG_TRACE` is set to a `true` value (i.e.,
 // 1, true, etc), or `-tags debug0` is used. This allows you to
-// compile-in the trace logs, but only show them when you 
+// compile-in the trace logs, but only show them when you
 // set the environment variable
 const Trace = false
 
@@ -35,5 +39,10 @@ func Dump(v ...interface{}) {}
 // To reset this, you must call End() on the guard object that
 // gets returned by Marker().
 func Marker(f string, args ...interface{}) *markerg { return emptyMarkerGuard }
+
+var emptyMarkerGuard = &markerg{}
+
+type markerg struct{}
+
 func (g *markerg) BindError(_ *error) *markerg { return g }
-func (g *markerg) End() {}
+func (g *markerg) End()                        {}

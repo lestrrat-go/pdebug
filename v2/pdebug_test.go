@@ -24,12 +24,12 @@ func TestMarker(t *testing.T) {
 
 	func(ctx context.Context) {
 		var err error
-		g1 := pdebug.Marker(ctx, "Test 1").BindError(&err)
+		g1 := pdebug.FuncMarker(ctx).BindError(&err)
 		defer g1.End()
 
 		pdebug.Printf(ctx, "Hello, World test 1")
 
-		g2 := pdebug.Marker(ctx, "Test 2")
+		g2 := pdebug.Marker(ctx, "Test")
 		defer g2.End()
 
 		pdebug.Printf(ctx, "Hello, World test 2")
@@ -39,12 +39,12 @@ func TestMarker(t *testing.T) {
 	t.Logf("%s", buf.String())
 
 	if pdebug.Enabled && pdebug.Trace {
-		const expected = `|DEBUG| 123456789 0.00000 START Test 1
+		const expected = `|DEBUG| 123456789 0.00000 START github.com/lestrrat-go/pdebug/v2_test.TestMarker.func2
 |DEBUG| 123456789 0.00000   Hello, World test 1
-|DEBUG| 123456789 0.00000   START Test 2
+|DEBUG| 123456789 0.00000   START Test
 |DEBUG| 123456789 0.00000     Hello, World test 2
-|DEBUG| 123456789 0.00000   END   Test 2(elapsed=0s)
-|DEBUG| 123456789 0.00000 END   Test 1(elapsed=0s, error=test 1 error)
+|DEBUG| 123456789 0.00000   END   Test(elapsed=0s)
+|DEBUG| 123456789 0.00000 END   github.com/lestrrat-go/pdebug/v2_test.TestMarker.func2(elapsed=0s, error=test 1 error)
 `
 		if !assert.Equal(t, expected, buf.String()) {
 			return

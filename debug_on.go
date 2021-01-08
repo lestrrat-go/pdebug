@@ -5,19 +5,55 @@ package pdebug
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
 )
+
+type pdctx struct {
+	mutex   sync.Mutex
+	indentL int
+	LogTime bool
+	Prefix  string
+	Writer  io.Writer
+}
+
+var DefaultCtx = &pdctx{
+	LogTime: true,
+	Prefix:  "|DEBUG| ",
+	Writer:  os.Stdout,
+}
+
+type guard struct {
+	cb func()
+}
+
+func (g *guard) End() {
+	if cb := g.cb; cb != nil {
+		cb()
+	}
+}
+
+type markerg struct {
+	indentg guard
+	ctx     *pdctx
+	f       string
+	args    []interface{}
+	start   time.Time
+	errptr  *error
+}
+
+var emptyMarkerGuard = &markerg{}
 
 const Enabled = true
 
 type Guard interface {
 	End()
 }
-
-var emptyGuard = &guard{}
 
 func (ctx *pdctx) Unindent() {
 	ctx.mutex.Lock()
@@ -38,7 +74,7 @@ func (ctx *pdctx) preamble(buf *bytes.Buffer) {
 		buf.WriteString(p)
 	}
 	if ctx.LogTime {
-		fmt.Fprintf(buf, "%0.5f ", float64(time.Now().UnixNano()) / 1000000.0)
+		fmt.Fprintf(buf, "%0.5f ", float64(time.Now().UnixNano())/1000000.0)
 	}
 
 	for i := 0; i < ctx.indentL; i++ {
@@ -53,7 +89,7 @@ func (ctx *pdctx) Printf(f string, args ...interface{}) {
 	buf := bytes.Buffer{}
 	ctx.preamble(&buf)
 	fmt.Fprintf(&buf, f, args...)
-	buf.WriteTo(ctx.Writer)
+	_, _ = buf.WriteTo(ctx.Writer)
 }
 
 func Marker(f string, args ...interface{}) *markerg {
@@ -75,7 +111,7 @@ func (ctx *pdctx) Marker(f string, args ...interface{}) *markerg {
 		}
 	}
 
-	buf.WriteTo(ctx.Writer)
+	_, _ = buf.WriteTo(ctx.Writer)
 
 	g := ctx.Indent()
 	return &markerg{
@@ -120,7 +156,7 @@ func (g *markerg) End() {
 		}
 	}
 
-	buf.WriteTo(g.ctx.Writer)
+	_, _ = buf.WriteTo(g.ctx.Writer)
 }
 
 type legacyg struct {

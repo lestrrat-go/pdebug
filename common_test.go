@@ -1,3 +1,5 @@
+// +build debug OR debug0
+
 package pdebug
 
 import (
@@ -50,7 +52,7 @@ func TestMarker(t *testing.T) {
 	f1 := func() {
 		g := Marker("f1")
 		defer g.End()
-		f2()
+		_ = f2()
 	}
 
 	f1()
@@ -90,7 +92,7 @@ func TestLegacyMarker(t *testing.T) {
 	f1 := func() {
 		g := IPrintf("START f1")
 		defer g.IRelease("END f1")
-		f2()
+		_ = f2()
 	}
 
 	f1()
