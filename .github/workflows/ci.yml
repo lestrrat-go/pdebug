@@ -25,7 +25,9 @@ jobs:
           echo "::set-env name=GOROOT::$HOME/gotip"
           echo "::add-path::$HOME/gotip/bin"
           echo "::add-path::$(go env GOPATH)/bin"
-      - name: Test
+      - name: Test 
+        run: go test -tags debug -v -race ./...
+      - name: Test (With Build Tag)
         run: go test -v -race ./...
       - name: Upload code coverage to codecov
         if: matrix.go == '1.15'

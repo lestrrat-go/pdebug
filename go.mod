@@ -1,8 +1,8 @@
-module github.com/lestrrat-go/pdebug
+module github.com/lestrrat-go/pdebug/v3
 
-go 1.13
+go 1.16
 
 require (
-	github.com/davecgh/go-spew v1.1.0
-	github.com/stretchr/testify v1.4.0
+	github.com/lestrrat-go/option v0.0.0-20210103042652-6f1ecfceda35
+	github.com/stretchr/testify v1.6.1
 )
