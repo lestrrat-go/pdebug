@@ -34,7 +34,6 @@ type mGuard struct {
 	indent    int
 	msgFormat string
 	msgArgs   []interface{}
-	out       io.Writer
 	start     time.Time
 }
 
@@ -118,7 +117,7 @@ func Marker(format string, args ...interface{}) MarkerGuard {
 	formatMarkerMessage(&buf, "START "+mg.msgFormat, mg.msgArgs, prefix, nil, clock, mg.indent)
 
 	st.mu.Lock()
-	st.out.Write(buf)
+	_, _ = st.out.Write(buf)
 	st.indent += indentPerLevel
 	st.mu.Unlock()
 	return mg
@@ -172,7 +171,7 @@ func (mg *mGuard) End() {
 	formatMarkerMessage(&buf, "END   "+mg.msgFormat, mg.msgArgs, prefix, postfix, clock, mg.indent)
 
 	st.mu.Lock()
-	st.out.Write(buf)
+	_, _ = st.out.Write(buf)
 	st.mu.Unlock()
 
 	releaseMGuard(mg)
@@ -227,6 +226,6 @@ func Printf(format string, args ...interface{}) {
 	formatMarkerMessage(&buf, format, args, prefix, nil, clock, indent)
 
 	st.mu.Lock()
-	st.out.Write(buf)
+	_, _ = st.out.Write(buf)
 	st.mu.Unlock()
 }
